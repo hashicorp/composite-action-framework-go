@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/actions-go-build/internal/testhelpers/assert"
+	"github.com/hashicorp/composite-action-framework-go/pkg/testhelpers/assert"
 )
 
 // args constructs a slice like os.Args, setting the first
