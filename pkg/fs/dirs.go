@@ -8,8 +8,16 @@ import (
 	"time"
 )
 
-func DirExists(name string) (bool, error) {
-	return existsAndPassesTest(name, func(info os.FileInfo) bool {
+// DirExists checks if the dir named by segments exists.
+// Segments is a set of path segments that may or may not themselves
+// contain path separators. The following three calls are all equivalent:
+//
+//   DirExists("some/long/path")
+//   DirExists("some", "long/path")
+//   DirExists("some", "long", "path")
+func DirExists(name ...string) (bool, error) {
+	path := filepath.Join(name...)
+	return existsAndPassesTest(path, func(info os.FileInfo) bool {
 		return info.IsDir()
 	})
 }

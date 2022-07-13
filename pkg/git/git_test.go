@@ -9,16 +9,32 @@ import (
 	tmp "github.com/hashicorp/composite-action-framework-go/pkg/testhelpers/tmptest"
 )
 
-func TestGetRemote(t *testing.T) {
+func TestInit(t *testing.T) {
+	dir := tmp.Dir(t)
+	_, err := Init(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.DirExists(t, dir, ".git")
+}
 
-	dir := tmp.Dir(t, tmp.WithContentsOf("testdata/repo1"))
-	dotgit := filepath.Join(dir, "dotgit")
-	dg := filepath.Join(dir, ".git")
-	if err := os.Rename(dotgit, dg); err != nil {
+func TestOpen(t *testing.T) {
+	dir := copyOfTestRepo(t)
+	_, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestClient_GetRemoteNamed(t *testing.T) {
+	dir := copyOfTestRepo(t)
+
+	c, err := Open(dir)
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	got, err := GetRemote(dir, "origin")
+	got, err := c.GetRemoteNamed("origin")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,4 +42,15 @@ func TestGetRemote(t *testing.T) {
 	wantURLs := []string{"https://github.com/dadgarcorp/lockbox"}
 
 	assert.Equal(t, got.URLs, wantURLs)
+}
+
+func copyOfTestRepo(t *testing.T) (dir string) {
+	t.Helper()
+	dir = tmp.Dir(t, tmp.WithContentsOf("testdata/repo1"))
+	dotgit := filepath.Join(dir, "dotgit")
+	dg := filepath.Join(dir, ".git")
+	if err := os.Rename(dotgit, dg); err != nil {
+		t.Fatal(err)
+	}
+	return dir
 }
