@@ -99,10 +99,19 @@ func newClient(dir string, options []Option, repoFunc func() (*git.Repository, e
 	if err != nil {
 		return nil, err
 	}
+	c, err := repo.Config()
+	if err != nil {
+		return nil, err
+	}
+	if opts.authorEmail == "" && c.User.Email == "" {
+		opts.authorEmail = "git@example.com"
+	}
+	if opts.authorName == "" && c.User.Name == "" {
+		opts.authorName = "Git User"
+	}
 	return &Client{
 		opts: opts,
 		dir:  dir,
 		repo: repo,
 	}, nil
-
 }
