@@ -2,6 +2,12 @@
 
 A library of packages for writing _composite_ GitHub Actions in Go.
 
+---
+
+_This is intended for internal HashiCorp use only and is not generally supported for other users._
+
+---
+
 This is different from other Go GitHub Actions libraries which are focussed on
 writing standalone actions that just run a go binary and then exit.
 
