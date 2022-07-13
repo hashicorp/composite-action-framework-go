@@ -3,6 +3,7 @@ package git
 import (
 	"time"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -23,4 +24,26 @@ func newCommit(c *object.Commit) Commit {
 		AuthorTime:  c.Author.When,
 		Message:     c.Message,
 	}
+}
+
+func (c *Client) Add(paths ...string) error {
+	wt, err := c.repo.Worktree()
+	if err != nil {
+		return err
+	}
+	for _, p := range paths {
+		if _, err := wt.Add(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Client) Commit(message string) error {
+	wt, err := c.repo.Worktree()
+	if err != nil {
+		return err
+	}
+	_, err = wt.Commit(message, &git.CommitOptions{})
+	return err
 }
