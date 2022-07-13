@@ -8,18 +8,33 @@ import (
 )
 
 type Client struct {
+	opts ClientOptions
 	dir  string
 	repo *git.Repository
 }
 
-func Init(dir string) (*Client, error) {
-	return newClient(dir, func() (*git.Repository, error) {
+type ClientOptions struct {
+	authorName  string
+	authorEmail string
+}
+
+type Option func(*ClientOptions)
+
+func WithAuthor(name, email string) Option {
+	return func(o *ClientOptions) {
+		o.authorName = name
+		o.authorEmail = email
+	}
+}
+
+func Init(dir string, options ...Option) (*Client, error) {
+	return newClient(dir, options, func() (*git.Repository, error) {
 		return git.PlainInit(dir, false)
 	})
 }
 
-func Open(dir string) (*Client, error) {
-	return newClient(dir, func() (*git.Repository, error) {
+func Open(dir string, options ...Option) (*Client, error) {
+	return newClient(dir, options, func() (*git.Repository, error) {
 		return git.PlainOpenWithOptions(dir, &git.PlainOpenOptions{DetectDotGit: true})
 	})
 }
@@ -75,12 +90,17 @@ func (c *Client) GetRemoteNamed(name string) (*config.RemoteConfig, error) {
 	return r, nil
 }
 
-func newClient(dir string, repoFunc func() (*git.Repository, error)) (*Client, error) {
+func newClient(dir string, options []Option, repoFunc func() (*git.Repository, error)) (*Client, error) {
+	opts := ClientOptions{}
+	for _, o := range options {
+		o(&opts)
+	}
 	repo, err := repoFunc()
 	if err != nil {
 		return nil, err
 	}
 	return &Client{
+		opts: opts,
 		dir:  dir,
 		repo: repo,
 	}, nil

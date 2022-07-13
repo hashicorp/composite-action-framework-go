@@ -44,6 +44,13 @@ func (c *Client) Commit(message string) error {
 	if err != nil {
 		return err
 	}
-	_, err = wt.Commit(message, &git.CommitOptions{})
+	opts := &git.CommitOptions{}
+	if c.opts.authorName != "" {
+		opts.Author.Email = c.opts.authorEmail
+	}
+	if c.opts.authorName != "" {
+		opts.Author.Name = c.opts.authorName
+	}
+	_, err = wt.Commit(message, opts)
 	return err
 }
