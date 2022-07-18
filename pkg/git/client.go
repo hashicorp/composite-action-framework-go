@@ -2,15 +2,17 @@ package git
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 )
 
 type Client struct {
-	opts ClientOptions
-	dir  string
-	repo *git.Repository
+	opts    ClientOptions
+	dir     string
+	rootDir string
+	repo    *git.Repository
 }
 
 type ClientOptions struct {
@@ -37,6 +39,18 @@ func Open(dir string, options ...Option) (*Client, error) {
 	return newClient(dir, options, func() (*git.Repository, error) {
 		return git.PlainOpenWithOptions(dir, &git.PlainOpenOptions{DetectDotGit: true})
 	})
+}
+
+func (c *Client) RootDir() string {
+	return c.rootDir
+}
+
+func (c *Client) WorkDir() string {
+	return c.dir
+}
+
+func (c *Client) RepoRelativeDir() (string, error) {
+	return filepath.Rel(c.rootDir, c.dir)
 }
 
 func (c *Client) Log(n int) ([]Commit, error) {
@@ -99,6 +113,11 @@ func newClient(dir string, options []Option, repoFunc func() (*git.Repository, e
 	if err != nil {
 		return nil, err
 	}
+	wt, err := repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+	rootDir := wt.Filesystem.Root()
 	c, err := repo.Config()
 	if err != nil {
 		return nil, err
@@ -110,8 +129,9 @@ func newClient(dir string, options []Option, repoFunc func() (*git.Repository, e
 		opts.authorName = "Git User"
 	}
 	return &Client{
-		opts: opts,
-		dir:  dir,
-		repo: repo,
+		opts:    opts,
+		dir:     dir,
+		rootDir: rootDir,
+		repo:    repo,
 	}, nil
 }
