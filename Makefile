@@ -8,3 +8,9 @@ HEAD_REF    := $(shell git rev-parse HEAD)
 
 module/ref/head:
 	@echo "$(MODULE_NAME)@$(HEAD_REF)"
+
+test:
+	go test ./...
+
+testv:
+	go test -v ./...
