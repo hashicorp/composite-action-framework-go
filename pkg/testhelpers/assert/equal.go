@@ -7,6 +7,7 @@ import (
 )
 
 func Equal(t *testing.T, got, want interface{}) {
+	t.Helper()
 	diff := cmp.Diff(got, want)
 	if diff != "" {
 		t.Errorf("Mismatch (-got +want):\n%s", diff)
