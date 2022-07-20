@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"regexp"
 	"sort"
 
 	"github.com/go-git/go-git/v5"
@@ -28,13 +28,13 @@ func (ws WorktreeState) IsDirty() bool {
 }
 
 type WorktreeStateConfig struct {
-	ignoreGlobs []string
+	ignorePatterns []string
 }
 
 type WorktreeStateOption func(*WorktreeStateConfig)
 
-func WorktreeStateIgnoreGlobs(globs ...string) WorktreeStateOption {
-	return func(c *WorktreeStateConfig) { c.ignoreGlobs = globs }
+func WorktreeStateIgnorePatterns(patterns ...string) WorktreeStateOption {
+	return func(c *WorktreeStateConfig) { c.ignorePatterns = patterns }
 }
 
 // SourceInfo returns the SourceInfo of the repo.
@@ -44,7 +44,7 @@ func (c *Client) WorktreeState(opts ...WorktreeStateOption) (WorktreeState, erro
 		o(&cfg)
 	}
 	ws := WorktreeState{}
-	dirtyFiles, err := c.DirtyFiles(cfg.ignoreGlobs...)
+	dirtyFiles, err := c.DirtyFiles(cfg.ignorePatterns...)
 	if err != nil {
 		return ws, err
 	}
@@ -58,6 +58,7 @@ func (c *Client) WorktreeState(opts ...WorktreeStateOption) (WorktreeState, erro
 		return ws, nil
 	}
 	summer := sha1.New()
+	fmt.Fprintf(summer, "head: %s\n", commit.ID)
 	for _, path := range dirtyFiles {
 		if err := writeFileEntry(summer, path); err != nil {
 			return ws, err
@@ -96,7 +97,7 @@ func writeFileEntry(w io.Writer, path string) error {
 // new (untracked), contents changed, deleted, renamed, copied, unmerged, whether the
 // changes have been staged or not. It also includes files that are ignored by the
 // standard ignore files. The list is sorted using strings.Sort.
-func (c *Client) DirtyFiles(excludeGlobs ...string) ([]string, error) {
+func (c *Client) DirtyFiles(excludePatterns ...string) ([]string, error) {
 	wt, err := c.repo.Worktree()
 	if err != nil {
 		return nil, err
@@ -108,13 +109,16 @@ func (c *Client) DirtyFiles(excludeGlobs ...string) ([]string, error) {
 	if status.IsClean() {
 		return nil, nil
 	}
-	var out []string
-	for name, s := range status {
-		ok, err := matchesAnyGlob(name, excludeGlobs...)
-		if err != nil {
+	ignore := make([]*regexp.Regexp, len(excludePatterns))
+	for i, p := range excludePatterns {
+		var err error
+		if ignore[i], err = regexp.Compile(p); err != nil {
 			return nil, err
 		}
-		if ok {
+	}
+	var out []string
+	for name, s := range status {
+		if matchesAnyPattern(name, ignore) {
 			continue
 		}
 		if s.Worktree != git.Unmodified || s.Staging != git.Unmodified {
@@ -125,15 +129,11 @@ func (c *Client) DirtyFiles(excludeGlobs ...string) ([]string, error) {
 	return out, nil
 }
 
-func matchesAnyGlob(name string, globs ...string) (bool, error) {
-	for _, g := range globs {
-		ok, err := filepath.Match(g, name)
-		if err != nil {
-			return false, err
-		}
-		if ok {
-			return true, nil
+func matchesAnyPattern(name string, ignore []*regexp.Regexp) bool {
+	for _, p := range ignore {
+		if p.MatchString(name) {
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
