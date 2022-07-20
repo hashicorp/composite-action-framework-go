@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/go-git/go-git/v5"
@@ -26,10 +27,24 @@ func (ws WorktreeState) IsDirty() bool {
 	return ws.Head.ID == ws.SourceHash
 }
 
+type WorktreeStateConfig struct {
+	ignoreGlobs []string
+}
+
+type WorktreeStateOption func(*WorktreeStateConfig)
+
+func WorktreeStateIgnoreGlobs(globs ...string) WorktreeStateOption {
+	return func(c *WorktreeStateConfig) { c.ignoreGlobs = globs }
+}
+
 // SourceInfo returns the SourceInfo of the repo.
-func (c *Client) WorktreeState() (WorktreeState, error) {
+func (c *Client) WorktreeState(opts ...WorktreeStateOption) (WorktreeState, error) {
+	cfg := WorktreeStateConfig{}
+	for _, o := range opts {
+		o(&cfg)
+	}
 	ws := WorktreeState{}
-	dirtyFiles, err := c.DirtyFiles()
+	dirtyFiles, err := c.DirtyFiles(cfg.ignoreGlobs...)
 	if err != nil {
 		return ws, err
 	}
@@ -81,7 +96,7 @@ func writeFileEntry(w io.Writer, path string) error {
 // new (untracked), contents changed, deleted, renamed, copied, unmerged, whether the
 // changes have been staged or not. It also includes files that are ignored by the
 // standard ignore files. The list is sorted using strings.Sort.
-func (c *Client) DirtyFiles() ([]string, error) {
+func (c *Client) DirtyFiles(excludeGlobs ...string) ([]string, error) {
 	wt, err := c.repo.Worktree()
 	if err != nil {
 		return nil, err
@@ -95,10 +110,30 @@ func (c *Client) DirtyFiles() ([]string, error) {
 	}
 	var out []string
 	for name, s := range status {
+		ok, err := matchesAnyGlob(name, excludeGlobs...)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			continue
+		}
 		if s.Worktree != git.Unmodified || s.Staging != git.Unmodified {
 			out = append(out, name)
 		}
 	}
 	sort.Strings(out)
 	return out, nil
+}
+
+func matchesAnyGlob(name string, globs ...string) (bool, error) {
+	for _, g := range globs {
+		ok, err := filepath.Match(g, name)
+		if err != nil {
+			return false, err
+		}
+		if ok {
+			return true, nil
+		}
+	}
+	return false, nil
 }
