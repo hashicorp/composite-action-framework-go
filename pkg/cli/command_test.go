@@ -35,9 +35,56 @@ func (a *testArgs) ParseArgs(args []string) error {
 	return nil
 }
 
+type testEnv struct {
+	home string
+}
+
+func (e *testEnv) ReadEnv() error {
+	e.home = "/test/home"
+	return nil
+}
+
 type testOpts struct {
 	testFlags
 	testArgs
+	testEnv
+}
+
+type envFlagArgsOpts struct {
+	env        string
+	flag       string
+	arg        string
+	envFlag    string
+	envArg     string
+	flagArg    string
+	envFlagArg string
+}
+
+func (efa *envFlagArgsOpts) ReadEnv() error {
+	efa.env = "env"
+	efa.envFlag = "env"
+	efa.envArg = "env"
+	efa.envFlagArg = "env"
+	return nil
+}
+
+func (efa *envFlagArgsOpts) Flags(fs *flag.FlagSet) {
+	fs.StringVar(&efa.flag, "flag", "", "flag only")
+	fs.StringVar(&efa.envFlag, "envFlag", "", "env overridden by flag")
+	fs.StringVar(&efa.flagArg, "flagArg", "", "flag overridden by arg")
+	fs.StringVar(&efa.envFlagArg, "envFlagArg", "", "env overridden by flag and arg")
+}
+
+func (efa *envFlagArgsOpts) ParseArgs(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("exactly 1 arg required")
+	}
+	arg := args[0]
+	efa.arg = arg
+	efa.envArg = arg
+	efa.flagArg = arg
+	efa.envFlagArg = arg
+	return nil
 }
 
 func testCLI() (Command, *bytes.Buffer) {
@@ -67,6 +114,15 @@ func testCLI() (Command, *bytes.Buffer) {
 		}),
 		LeafCommand("leaf5", "leaf command 5", func(o *testOpts) error {
 			return write("leaf5", o.flag1, o.flag2, strings.Join(o.args, ", "))
+		}),
+		LeafCommand("leaf6", "leaf command 6", func(e *testEnv) error {
+			return write("leaf6", e.home)
+		}),
+		LeafCommand("leaf7", "leaf command 7", func(o *testOpts) error {
+			return write("leaf7", o.flag1, o.flag2, strings.Join(o.args, ", "), o.home)
+		}),
+		LeafCommand("leaf8", "leaf command 8", func(o *envFlagArgsOpts) error {
+			return write("leaf8", o.env, o.flag, o.arg, o.envFlag, o.envArg, o.flagArg, o.envFlagArg)
 		}),
 	)
 	return root, buf
@@ -137,6 +193,19 @@ func TestCommand_ok(t *testing.T) {
 		{
 			args("leaf5", "-flag1", "-flag2", "hello", "world"),
 			"leaf5, true, true, hello, world",
+		},
+		{
+			args("leaf6"),
+			"leaf6, /test/home",
+		},
+		{
+			args("leaf7", "-flag1", "-flag2=false", "hello", "world"),
+			"leaf7, true, false, hello, world, /test/home",
+		},
+		// Test that we apply env, flags, args in that order.
+		{
+			args("leaf8", "-flag=flag", "-envFlag=flag", "-flagArg=flag", "-envFlagArg=flag", "arg"),
+			"leaf8, env, flag, arg, flag, arg, arg, arg",
 		},
 	}
 

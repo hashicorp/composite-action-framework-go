@@ -27,6 +27,7 @@ type Command interface {
 	Run() func() error
 	Flags() Flags
 	Args() Args
+	Env() Env
 	Subcommands() []Command
 	Execute(args []string) error
 }
@@ -91,24 +92,16 @@ type None = *any
 // the resultant opts.
 func LeafCommand[T any](name, desc string, run func(opts *T) error) Command {
 	opts := new(T)
-	var (
-		flags Flags
-		args  Args
-	)
-	flags, _ = any(opts).(Flags)
-	args, _ = any(opts).(Args)
-	// Debugging
-	//log.Printf("command: %s", name)
-	//log.Printf("opts = % #v", opts)
-	//log.Printf("*opts = % #v", *opts)
-	//log.Printf("flags = % #v", flags)
-	//log.Printf("args = % #v", args)
-	// End Debugging
+	// It's ok for all/eny of flags, args, env to be nil.
+	flags, _ := any(opts).(Flags)
+	args, _ := any(opts).(Args)
+	env, _ := any(opts).(Env)
 	return cmd{
 		name:  name,
 		desc:  desc,
 		flags: flags,
 		args:  args,
+		env:   env,
 		run:   func() error { return run(opts) },
 	}
 }

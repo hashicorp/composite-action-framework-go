@@ -5,3 +5,11 @@ package cli
 type Env interface {
 	ReadEnv() error
 }
+
+func parseEnv(c Command) error {
+	e := c.Env()
+	if e == nil {
+		return nil
+	}
+	return e.ReadEnv()
+}

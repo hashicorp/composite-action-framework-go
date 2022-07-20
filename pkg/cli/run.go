@@ -3,6 +3,9 @@ package cli
 import "fmt"
 
 func runCLI(c Command, args []string) error {
+	if err := parseEnv(c); err != nil {
+		return err
+	}
 	subArgs, err := parseFlags(c, args[1:])
 	if err != nil {
 		return err
