@@ -15,6 +15,7 @@ type cmd struct {
 	flags Flags
 	args  Args
 	env   Env
+	init  Init
 	subs  []Command
 }
 
@@ -28,6 +29,7 @@ type Command interface {
 	Flags() Flags
 	Args() Args
 	Env() Env
+	Init() Init
 	Subcommands() []Command
 	Execute(args []string) error
 }
@@ -38,6 +40,7 @@ func (c cmd) Run() func() error           { return c.run }
 func (c cmd) Flags() Flags                { return c.flags }
 func (c cmd) Args() Args                  { return c.args }
 func (c cmd) Env() Env                    { return c.env }
+func (c cmd) Init() Init                  { return c.init }
 func (c cmd) Subcommands() []Command      { return c.subs }
 func (c cmd) Execute(args []string) error { return runCLI(c, args) }
 
@@ -96,12 +99,14 @@ func LeafCommand[T any](name, desc string, run func(opts *T) error) Command {
 	flags, _ := any(opts).(Flags)
 	args, _ := any(opts).(Args)
 	env, _ := any(opts).(Env)
+	init, _ := any(opts).(Init)
 	return cmd{
 		name:  name,
 		desc:  desc,
 		flags: flags,
 		args:  args,
 		env:   env,
+		init:  init,
 		run:   func() error { return run(opts) },
 	}
 }

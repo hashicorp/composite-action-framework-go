@@ -33,5 +33,8 @@ func run(c Command, args []string) error {
 	} else if len(args) != 0 {
 		return ErrNoArgsAllowed
 	}
+	if err := initOpts(c); err != nil {
+		return err
+	}
 	return c.Run()()
 }

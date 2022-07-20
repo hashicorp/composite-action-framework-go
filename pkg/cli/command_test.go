@@ -51,13 +51,34 @@ type testOpts struct {
 }
 
 type envFlagArgsOpts struct {
-	env        string
-	flag       string
-	arg        string
-	envFlag    string
-	envArg     string
-	flagArg    string
-	envFlagArg string
+	env            string
+	envArg         string
+	envArgInit     string
+	envFlag        string
+	envFlagArg     string
+	envFlagInit    string
+	envFlagArgInit string
+
+	flag        string
+	flagArg     string
+	flagInit    string
+	flagArgInit string
+
+	arg     string
+	argInit string
+
+	init string
+}
+
+func (efa *envFlagArgsOpts) Init() error {
+	efa.envArgInit = "init"
+	efa.envFlagInit = "init"
+	efa.envFlagArgInit = "init"
+	efa.flagInit = "init"
+	efa.flagArgInit = "init"
+	efa.argInit = "init"
+	efa.init = "init"
+	return nil
 }
 
 func (efa *envFlagArgsOpts) ReadEnv() error {
@@ -69,10 +90,16 @@ func (efa *envFlagArgsOpts) ReadEnv() error {
 }
 
 func (efa *envFlagArgsOpts) Flags(fs *flag.FlagSet) {
-	fs.StringVar(&efa.flag, "flag", "", "flag only")
 	fs.StringVar(&efa.envFlag, "envFlag", "", "env overridden by flag")
-	fs.StringVar(&efa.flagArg, "flagArg", "", "flag overridden by arg")
 	fs.StringVar(&efa.envFlagArg, "envFlagArg", "", "env overridden by flag and arg")
+	fs.StringVar(&efa.envFlagInit, "envFlagInit", "", "env overridden by flag and init")
+	fs.StringVar(&efa.envFlagArgInit, "envFlagArgInit", "", "env overridden by flag, arg, and init")
+
+	fs.StringVar(&efa.flag, "flag", "", "flag only")
+	fs.StringVar(&efa.flagArg, "flagArg", "", "flag overridden by arg")
+	fs.StringVar(&efa.flagInit, "flagInit", "", "flag overridden by init")
+	fs.StringVar(&efa.flagInit, "flagArgInit", "", "flag overridden by arg and init")
+
 }
 
 func (efa *envFlagArgsOpts) ParseArgs(args []string) error {
@@ -80,10 +107,17 @@ func (efa *envFlagArgsOpts) ParseArgs(args []string) error {
 		return fmt.Errorf("exactly 1 arg required")
 	}
 	arg := args[0]
-	efa.arg = arg
 	efa.envArg = arg
-	efa.flagArg = arg
+	efa.envArgInit = arg
 	efa.envFlagArg = arg
+	efa.envFlagArgInit = arg
+
+	efa.flagArg = arg
+	efa.flagArgInit = arg
+
+	efa.arg = arg
+	efa.argInit = arg
+
 	return nil
 }
 
@@ -122,7 +156,22 @@ func testCLI() (Command, *bytes.Buffer) {
 			return write("leaf7", o.flag1, o.flag2, strings.Join(o.args, ", "), o.home)
 		}),
 		LeafCommand("leaf8", "leaf command 8", func(o *envFlagArgsOpts) error {
-			return write("leaf8", o.env, o.flag, o.arg, o.envFlag, o.envArg, o.flagArg, o.envFlagArg)
+			return write("leaf8",
+				o.env,
+				o.envArg,
+				o.envArgInit,
+				o.envFlag,
+				o.envFlagArg,
+				o.envFlagInit,
+				o.envFlagArgInit,
+				o.flag,
+				o.flagArg,
+				o.flagInit,
+				o.flagArgInit,
+				o.arg,
+				o.argInit,
+				o.init,
+			)
 		}),
 	)
 	return root, buf
@@ -202,10 +251,20 @@ func TestCommand_ok(t *testing.T) {
 			args("leaf7", "-flag1", "-flag2=false", "hello", "world"),
 			"leaf7, true, false, hello, world, /test/home",
 		},
-		// Test that we apply env, flags, args in that order.
+		// Test that we apply env, flags, args, init in that order.
 		{
-			args("leaf8", "-flag=flag", "-envFlag=flag", "-flagArg=flag", "-envFlagArg=flag", "arg"),
-			"leaf8, env, flag, arg, flag, arg, arg, arg",
+			args("leaf8",
+				"-envFlag=flag",
+				"-envFlagArg=flag",
+				"-envFlagInit=flag",
+				"-envFlagArgInit=flag",
+				"-flag=flag",
+				"-flagArg=flag",
+				"-flagInit=flag",
+				"-flagArgInit=flag",
+				"arg",
+			),
+			"leaf8, env, arg, init, flag, arg, init, init, flag, arg, init, init, arg, init, init",
 		},
 	}
 
