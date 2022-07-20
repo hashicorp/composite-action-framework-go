@@ -77,19 +77,6 @@ type Config = config.Config
 
 func (c *Client) Config() (*Config, error) {
 	return c.repo.Config()
-	//configFile, err := os.Open(filepath.Join(c.dir, ".git", "config"))
-	//if err != nil {
-	//	return nil, err
-	//}
-	//var closeErr error
-	//defer func() { closeErr = configFile.Close() }()
-
-	//c, err := config.ReadConfig(configFile)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	//return c, closeErr
 }
 
 func (c *Client) GetRemoteNamed(name string) (*config.RemoteConfig, error) {

@@ -26,6 +26,18 @@ func newCommit(c *object.Commit) Commit {
 	}
 }
 
+func (c *Client) HeadCommit() (Commit, error) {
+	h, err := c.repo.Head()
+	if err != nil {
+		return Commit{}, err
+	}
+	commit, err := c.repo.CommitObject(h.Hash())
+	if err != nil {
+		return Commit{}, err
+	}
+	return newCommit(commit), nil
+}
+
 func (c *Client) Add(paths ...string) error {
 	wt, err := c.repo.Worktree()
 	if err != nil {
