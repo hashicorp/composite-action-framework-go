@@ -14,6 +14,7 @@ type cmd struct {
 	run   func() error
 	flags Flags
 	args  Args
+	env   Env
 	subs  []Command
 }
 
@@ -35,6 +36,7 @@ func (c cmd) Description() string         { return c.desc }
 func (c cmd) Run() func() error           { return c.run }
 func (c cmd) Flags() Flags                { return c.flags }
 func (c cmd) Args() Args                  { return c.args }
+func (c cmd) Env() Env                    { return c.env }
 func (c cmd) Subcommands() []Command      { return c.subs }
 func (c cmd) Execute(args []string) error { return runCLI(c, args) }
 
@@ -83,6 +85,8 @@ type None = *any
 // The Flag set is parsed before the args.
 // If opts implements Args, then its ParseArgs method is called on args remaining
 // after the flag set is parsed.
+// If opts implements Env, then its ReadEnv method is called to populate it with
+// config from the environment.
 // The run function is called after flags and args have been parsed, and passed
 // the resultant opts.
 func LeafCommand[T any](name, desc string, run func(opts *T) error) Command {
