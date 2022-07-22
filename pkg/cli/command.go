@@ -83,25 +83,39 @@ type None = *any
 // The run function is called after flags and args have been parsed, and passed
 // the resultant opts.
 func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
-	opts := new(T)
-	// It's ok for all/eny of flags, args, env to be nil.
-	flags, _ := any(opts).(Flags)
-	args, _ := any(opts).(Args)
-	env, _ := any(opts).(Env)
-	init, _ := any(opts).(Init)
+	opts, optionSet := makeOptionSet[T]()
 	return &Command{
 		name:  name,
 		desc:  desc,
-		flags: flags,
-		args:  args,
-		env:   env,
-		init:  init,
+		env:   optionSet.env,
+		flags: optionSet.flags,
+		args:  optionSet.args,
+		init:  optionSet.init,
 		run:   func() error { return run(opts) },
 
 		stdout: os.Stdout,
 		stderr: os.Stderr,
 		stdin:  os.Stdin,
 	}
+}
+
+type optionSet struct {
+	flags Flags
+	args  Args
+	env   Env
+	init  Init
+}
+
+func makeOptionSet[T any]() (*T, optionSet) {
+	opts := new(T)
+	// It's ok for all/eny of flags, args, env to be nil.
+	var os optionSet
+	os.flags = makeFlags(opts)
+	os.args, _ = any(opts).(Args)
+	os.env, _ = any(opts).(Env)
+	os.init, _ = any(opts).(Init)
+
+	return opts, os
 }
 
 func (c *Command) printHelp(w io.Writer) error {
