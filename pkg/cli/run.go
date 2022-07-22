@@ -2,7 +2,10 @@ package cli
 
 import "fmt"
 
-func runCLI(c Command, args []string) error {
+func runCLI(c *Command, args []string) error {
+	if helpFunc := helpRequested(c, args); helpFunc != nil {
+		return helpFunc()
+	}
 	if err := parseEnv(c); err != nil {
 		return err
 	}
@@ -24,7 +27,7 @@ func runCLI(c Command, args []string) error {
 	return runCLI(sc, subArgs)
 }
 
-func run(c Command, args []string) error {
+func run(c *Command, args []string) error {
 	if c.Run() == nil {
 		return ErrNotImplemented
 	}
@@ -37,4 +40,16 @@ func run(c Command, args []string) error {
 		return err
 	}
 	return c.Run()()
+}
+
+func helpRequested(c *Command, args []string) func() error {
+	if len(args) < 2 {
+		return nil
+	}
+	switch args[1] {
+	default:
+		return nil
+	case "-h", "--h", "-help", "--help", "?":
+	}
+	return func() error { return c.printHelp(c.stdout) }
 }

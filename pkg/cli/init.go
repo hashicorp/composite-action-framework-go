@@ -4,7 +4,7 @@ type Init interface {
 	Init() error
 }
 
-func initOpts(c Command) error {
+func initOpts(c *Command) error {
 	i := c.Init()
 	if i == nil {
 		return nil

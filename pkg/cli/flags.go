@@ -8,15 +8,21 @@ type Flags interface {
 	Flags(*flag.FlagSet)
 }
 
-func parseFlags(c Command, args []string) ([]string, error) {
-	f := c.Flags()
-	if f == nil {
+func createFlagSet(c *Command) *flag.FlagSet {
+	var fs *flag.FlagSet
+	if f := c.Flags(); f != nil {
+		fs = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+		f.Flags(fs)
+	}
+	return fs
+}
+
+func parseFlags(c *Command, args []string) ([]string, error) {
+	if c.flagSet = createFlagSet(c); c.flagSet == nil {
 		return args, nil
 	}
-	fs := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
-	f.Flags(fs)
-	if err := fs.Parse(args); err != nil {
+	if err := c.flagSet.Parse(args); err != nil {
 		return nil, err
 	}
-	return fs.Args(), nil
+	return c.flagSet.Args(), nil
 }

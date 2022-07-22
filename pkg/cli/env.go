@@ -6,7 +6,7 @@ type Env interface {
 	ReadEnv() error
 }
 
-func parseEnv(c Command) error {
+func parseEnv(c *Command) error {
 	e := c.Env()
 	if e == nil {
 		return nil

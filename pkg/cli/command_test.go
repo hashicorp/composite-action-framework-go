@@ -121,7 +121,7 @@ func (efa *envFlagArgsOpts) ParseArgs(args []string) error {
 	return nil
 }
 
-func testCLI() (Command, *bytes.Buffer) {
+func testCLI() (*Command, *bytes.Buffer) {
 	buf := &bytes.Buffer{}
 	write := func(a ...any) error {
 		s := make([]string, len(a))
@@ -174,6 +174,9 @@ func testCLI() (Command, *bytes.Buffer) {
 			)
 		}),
 	)
+
+	root.SetStdout(buf)
+
 	return root, buf
 }
 
@@ -186,6 +189,32 @@ func TestCommand_ok(t *testing.T) {
 		{
 			args(),
 			"",
+		},
+		{
+			args("-h"), `
+root - root command
+
+Subcommands:
+
+  leaf   leaf command
+  leaf2  leaf command 2
+  root2  root command 2
+  leaf4  leaf command 4
+  leaf5  leaf command 5
+  leaf6  leaf command 6
+  leaf7  leaf command 7
+  leaf8  leaf command 8
+			`,
+		},
+		{
+			args("leaf2", "-h"), `
+leaf2 - leaf command 2
+
+  -flag1
+        flag1 desc
+  -flag2
+        flag2 desc
+		`,
 		},
 		{
 			args("leaf"),
@@ -275,7 +304,17 @@ func TestCommand_ok(t *testing.T) {
 			if err := c.Execute(args); err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, buf.String(), want)
+			got := buf.String()
+			want = strings.TrimSpace(want)
+			got = strings.TrimSpace(got)
+
+			want = strings.ReplaceAll(want, "\t", "    ")
+			got = strings.ReplaceAll(got, "\t", "    ")
+
+			if got != want {
+				t.Errorf("got:\n%s\n\nwant:\n%s", got, want)
+				assert.Equal(t, got, want)
+			}
 		})
 	}
 }
