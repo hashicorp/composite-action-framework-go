@@ -11,8 +11,6 @@ type Flags interface {
 	Flags(*flag.FlagSet)
 }
 
-type multiFlags []Flags
-
 func createFlagSet(c *Command) *flag.FlagSet {
 	var fs *flag.FlagSet
 	if f := c.Flags(); f != nil {
@@ -31,6 +29,8 @@ func parseFlags(c *Command, args []string) ([]string, error) {
 	}
 	return c.flagSet.Args(), nil
 }
+
+type multiFlags []Flags
 
 func (mf multiFlags) Flags(fs *flag.FlagSet) {
 	for _, f := range mf {
