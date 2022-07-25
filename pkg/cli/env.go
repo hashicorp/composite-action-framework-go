@@ -6,6 +6,16 @@ type Env interface {
 	ReadEnv() error
 }
 
+func ReadEnvAll(objs ...Env) error {
+	var err error
+	for _, e := range objs {
+		if err = e.ReadEnv(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func parseEnv(c *Command) error {
 	e := c.Env()
 	if e == nil {

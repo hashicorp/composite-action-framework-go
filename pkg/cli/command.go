@@ -108,9 +108,9 @@ type optionSet struct {
 
 func makeOptionSet[T any]() (*T, optionSet) {
 	opts := new(T)
-	// It's ok for all/eny of flags, args, env to be nil.
+	// It's ok for all/eny of flags, args, env, init to be nil.
 	var os optionSet
-	os.flags = makeFlags(opts)
+	os.flags, _ = any(opts).(Flags)
 	os.args, _ = any(opts).(Args)
 	os.env, _ = any(opts).(Env)
 	os.init, _ = any(opts).(Init)
