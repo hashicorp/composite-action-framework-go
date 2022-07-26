@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	StepSumarryEnabledFlag = "github-step-summary"
+	StepSummaryEnabledFlag = "github-step-summary"
 	StepSummaryPathEnv     = "GITHUB_STEP_SUMMARY"
 )
 
@@ -20,7 +20,7 @@ type StepSummary struct {
 }
 
 func (gss *StepSummary) ReadEnv() error {
-	gss.filePath = os.Getenv(StepSumarryEnabledFlag)
+	gss.filePath = os.Getenv(StepSummaryPathEnv)
 	return nil
 }
 
@@ -28,7 +28,7 @@ func (gss *StepSummary) Flags(fs *flag.FlagSet) {
 	gss.flagSet = fs // Save this to check if flags actually provided later.
 	desc := fmt.Sprintf("write a summary to $%s", StepSummaryPathEnv)
 	enabledByDefault := gss.filePath != ""
-	fs.BoolVar(&gss.enabled, StepSumarryEnabledFlag, enabledByDefault, desc)
+	fs.BoolVar(&gss.enabled, StepSummaryEnabledFlag, enabledByDefault, desc)
 }
 
 func (gss *StepSummary) Open() (io.Writer, error) {
