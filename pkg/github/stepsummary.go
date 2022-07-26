@@ -53,5 +53,5 @@ func (gss *StepSummary) Close() error {
 }
 
 func openAppend(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	return os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 }
