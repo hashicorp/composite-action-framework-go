@@ -11,14 +11,13 @@ import (
 // Don't construct Commands manually, instead use the RootCommand
 // and LeafCommand functions to construct root and leaf commands.
 type Command struct {
-	name  string
-	desc  string
-	run   func() error
-	flags Flags
-	args  Args
-	env   Env
-	init  Init
-	subs  []*Command
+	name, desc, help string
+	run              func() error
+	flags            Flags
+	args             Args
+	env              Env
+	init             Init
+	subs             []*Command
 
 	// Runtime
 	flagSet        *flag.FlagSet
@@ -28,6 +27,7 @@ type Command struct {
 
 func (c *Command) Name() string                { return c.name }
 func (c *Command) Description() string         { return c.desc }
+func (c *Command) Help() string                { return c.help }
 func (c *Command) Run() func() error           { return c.run }
 func (c *Command) Flags() Flags                { return c.flags }
 func (c *Command) Args() Args                  { return c.args }
@@ -35,6 +35,8 @@ func (c *Command) Env() Env                    { return c.env }
 func (c *Command) Init() Init                  { return c.init }
 func (c *Command) Subcommands() []*Command     { return c.subs }
 func (c *Command) Execute(args []string) error { return runCLI(c, args) }
+
+func (c *Command) WithHelp(h string) *Command { c.help = h; return c }
 
 func getSubCommand(parent *Command, name string) (*Command, bool) {
 	for _, c := range parent.Subcommands() {
@@ -49,10 +51,9 @@ func getSubCommand(parent *Command, name string) (*Command, bool) {
 // by itself.
 func RootCommand(name, desc string, subcommands ...*Command) *Command {
 	c := &Command{
-		name: name,
-		desc: desc,
-		subs: subcommands,
-
+		name:   name,
+		desc:   desc,
+		subs:   subcommands,
 		stdout: os.Stdout,
 		stderr: os.Stderr,
 		stdin:  os.Stdin,
@@ -85,14 +86,14 @@ type None = *any
 func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
 	opts, optionSet := makeOptionSet[T]()
 	return &Command{
-		name:  name,
-		desc:  desc,
-		env:   optionSet.env,
-		flags: optionSet.flags,
-		args:  optionSet.args,
-		init:  optionSet.init,
-		run:   func() error { return run(opts) },
-
+		name:   name,
+		desc:   desc,
+		env:    optionSet.env,
+		flags:  optionSet.flags,
+		args:   optionSet.args,
+		init:   optionSet.init,
+		run:    func() error { return run(opts) },
+		help:   "No help text available.",
 		stdout: os.Stdout,
 		stderr: os.Stderr,
 		stdin:  os.Stdin,
