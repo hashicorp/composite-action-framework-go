@@ -2,7 +2,6 @@ package fs
 
 import (
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -24,7 +23,6 @@ func DirExists(name ...string) (bool, error) {
 
 // Mkdir makes the directory at path, using default permissions, and logs its activity.
 func Mkdir(path string) error {
-	log.Printf("Creating directory %q", path)
 	return os.MkdirAll(path, fs.ModePerm)
 }
 
@@ -38,8 +36,7 @@ func Mkdirs(paths ...string) error {
 	return nil
 }
 
-// SetMtime sets the mtime of all files inside dir to the provided time,
-// and logs its activity.
+// SetMtime sets the mtime of all files inside dir to the provided time.
 func SetMtimes(dir string, to time.Time) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -50,7 +47,6 @@ func SetMtimes(dir string, to time.Time) error {
 			continue
 		}
 		filePath := filepath.Join(dir, e.Name())
-		log.Printf("Updating mtime for %q to %s", filePath, to)
 		if err := os.Chtimes(filePath, to, to); err != nil {
 			return err
 		}
