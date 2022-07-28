@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func WriteJSONFile(filename string, v any) error {
+func WriteFile(filename string, v any) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func WriteJSONFile(filename string, v any) error {
 	return closeErr
 }
 
-func ReadJSONFile[T any](filename string) (T, error) {
+func ReadFile[T any](filename string) (T, error) {
 	v := new(T)
 	f, err := os.Open(filename)
 	if err != nil {
