@@ -1,10 +1,12 @@
 package cli
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 // Command represents a command in the CLI graph.
@@ -27,7 +29,7 @@ type Command struct {
 
 func (c *Command) Name() string                { return c.name }
 func (c *Command) Description() string         { return c.desc }
-func (c *Command) Help() string                { return c.help }
+func (c *Command) Help() string                { return fmt.Sprintf("%s\n%s", c.Usage(), strings.TrimSpace(c.help)) }
 func (c *Command) Run() func() error           { return c.run }
 func (c *Command) Flags() Flags                { return c.flags }
 func (c *Command) Args() Args                  { return c.args }
@@ -37,6 +39,17 @@ func (c *Command) Subcommands() []*Command     { return c.subs }
 func (c *Command) Execute(args []string) error { return runCLI(c, args) }
 
 func (c *Command) WithHelp(h string) *Command { c.help = h; return c }
+
+func (c *Command) Usage() string {
+	w := &bytes.Buffer{}
+	fs := createFlagSet(c)
+	if fs != nil {
+		fs.SetOutput(w)
+		fs.Usage()
+		return w.String()
+	}
+	return fmt.Sprintf("Usage of %s:", c.name)
+}
 
 func getSubCommand(parent *Command, name string) (*Command, bool) {
 	for _, c := range parent.Subcommands() {
@@ -93,7 +106,6 @@ func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
 		args:   optionSet.args,
 		init:   optionSet.init,
 		run:    func() error { return run(opts) },
-		help:   "No help text available.",
 		stdout: os.Stdout,
 		stderr: os.Stderr,
 		stdin:  os.Stdin,
