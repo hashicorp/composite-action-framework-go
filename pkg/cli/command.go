@@ -27,9 +27,11 @@ type Command struct {
 	stdin          io.Reader
 }
 
-func (c *Command) Name() string                { return c.name }
-func (c *Command) Description() string         { return c.desc }
-func (c *Command) Help() string                { return fmt.Sprintf("%s\n%s", c.Usage(), strings.TrimSpace(c.help)) }
+func (c *Command) Name() string        { return c.name }
+func (c *Command) Description() string { return c.desc }
+func (c *Command) Help() string {
+	return strings.TrimSpace(fmt.Sprintf("%s\n%s", c.Usage(), strings.TrimSpace(c.help)))
+}
 func (c *Command) Run() func() error           { return c.run }
 func (c *Command) Flags() Flags                { return c.flags }
 func (c *Command) Args() Args                  { return c.args }
@@ -41,12 +43,12 @@ func (c *Command) Execute(args []string) error { return runCLI(c, args) }
 func (c *Command) WithHelp(h string) *Command { c.help = h; return c }
 
 func (c *Command) Usage() string {
-	w := &bytes.Buffer{}
+	buf := &bytes.Buffer{}
 	fs := createFlagSet(c)
 	if fs != nil {
-		fs.SetOutput(w)
+		fs.SetOutput(buf)
 		fs.Usage()
-		return w.String()
+		return strings.TrimSpace(buf.String())
 	}
 	return fmt.Sprintf("Usage of %s:", c.name)
 }
