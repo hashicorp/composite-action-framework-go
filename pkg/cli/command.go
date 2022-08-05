@@ -30,7 +30,7 @@ type Command struct {
 func (c *Command) Name() string        { return c.name }
 func (c *Command) Description() string { return c.desc }
 func (c *Command) Help() string {
-	return strings.TrimSpace(fmt.Sprintf("%s\n%s", c.Usage(), strings.TrimSpace(c.help)))
+	return strings.TrimSpace(fmt.Sprintf("%s\n\n%s", c.Usage(), strings.TrimSpace(c.help)))
 }
 func (c *Command) Run() func() error           { return c.run }
 func (c *Command) Flags() Flags                { return c.flags }
