@@ -16,6 +16,12 @@ func FlagsAll(fs *flag.FlagSet, objs ...Flags) {
 	}
 }
 
+func FlagFuncsAll(fs *flag.FlagSet, flagFuncs ...func(*flag.FlagSet)) {
+	for _, f := range flagFuncs {
+		f(fs)
+	}
+}
+
 func createFlagSet(c *Command) *flag.FlagSet {
 	var fs *flag.FlagSet
 	if f := c.Flags(); f != nil {
