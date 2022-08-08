@@ -7,18 +7,21 @@ import (
 	"time"
 )
 
-// DirExists checks if the dir named by segments exists.
+func DirExists(name string) (bool, error) {
+	return existsAndPassesTest(name, func(info os.FileInfo) bool {
+		return info.IsDir()
+	})
+}
+
+// DirExistsJoin checks if the dir named by segments exists.
 // Segments is a set of path segments that may or may not themselves
 // contain path separators. The following three calls are all equivalent:
 //
-//   DirExists("some/long/path")
-//   DirExists("some", "long/path")
-//   DirExists("some", "long", "path")
-func DirExists(name ...string) (bool, error) {
-	path := filepath.Join(name...)
-	return existsAndPassesTest(path, func(info os.FileInfo) bool {
-		return info.IsDir()
-	})
+//   DirExistsJoin("some/long/path")
+//   DirExistsJoin("some", "long/path")
+//   DirExistsJoin("some", "long", "path")
+func DirExistsJoin(name ...string) (bool, error) {
+	return DirExists(filepath.Join(name...))
 }
 
 // Mkdir makes the directory at path, using default permissions, and logs its activity.
