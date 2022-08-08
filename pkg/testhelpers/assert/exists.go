@@ -9,7 +9,7 @@ import (
 
 func DirExists(t *testing.T, path ...string) {
 	t.Helper()
-	exists, err := fs.DirExists(path...)
+	exists, err := fs.DirExistsJoin(path...)
 	if err != nil {
 		t.Fatal(err)
 	}
