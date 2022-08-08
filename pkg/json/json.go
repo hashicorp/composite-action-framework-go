@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 )
@@ -34,4 +35,17 @@ func ReadFile[T any](filename string) (T, error) {
 	}
 
 	return *v, closeErr
+}
+
+func ReadBytes[T any](jsonBytes []byte) (T, error) {
+	v := new(T)
+	buf := bytes.NewBuffer(jsonBytes)
+	if err := json.NewDecoder(buf).Decode(v); err != nil {
+		return *v, err
+	}
+	return *v, nil
+}
+
+func ReadString[T any](jsonString string) (T, error) {
+	return ReadBytes[T]([]byte(jsonString))
 }
