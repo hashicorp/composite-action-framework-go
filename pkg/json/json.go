@@ -9,7 +9,9 @@ import (
 
 func Read[T any](r io.Reader) (T, error) {
 	v := new(T)
-	err := json.NewDecoder(r).Decode(v)
+	d := json.NewDecoder(r)
+	d.DisallowUnknownFields()
+	err := d.Decode(v)
 	return *v, err
 }
 
