@@ -58,8 +58,10 @@ func (c *Command) Synopsis() string {
 		fs.VisitAll(func(f *flag.Flag) {
 			if f.DefValue == "true" || f.DefValue == "false" {
 				fmt.Fprintf(buf, "[-%s] ", f.Name)
-			} else {
+			} else if f.DefValue == "" {
 				fmt.Fprintf(buf, "[-%s=%s] ", f.Name, strings.ToUpper(f.Name))
+			} else {
+				fmt.Fprintf(buf, "[-%s=%s (%s)] ", f.Name, strings.ToUpper(f.Name), f.DefValue)
 			}
 		})
 	}
@@ -68,7 +70,7 @@ func (c *Command) Synopsis() string {
 			if a.required && !a.variadic {
 				fmt.Fprintf(buf, "<%s>", a.name)
 			} else if !a.required && !a.variadic {
-				fmt.Fprintf(buf, "[%s]", a.name)
+				fmt.Fprintf(buf, "[%s(=%s)]", a.name, a.defaultVal)
 			} else if a.required && a.variadic {
 				fmt.Fprintf(buf, "<")
 				for i := 0; i < a.minVals; i++ {
@@ -76,7 +78,7 @@ func (c *Command) Synopsis() string {
 				}
 				fmt.Fprintf(buf, "...>")
 			} else if !a.required && a.variadic {
-				fmt.Fprintf(buf, "[%s...]", a.name)
+				fmt.Fprintf(buf, "[%s...](%s)", a.name, strings.Join(a.defaultVals, " "))
 			} else {
 				panic("logical error with arg handling; please alert the maintainers")
 			}
