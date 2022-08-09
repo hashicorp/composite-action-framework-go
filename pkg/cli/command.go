@@ -106,12 +106,13 @@ func getSubCommand(parent *Command, name string) (*Command, bool) {
 // by itself.
 func RootCommand(name, desc string, subcommands ...*Command) *Command {
 	c := &Command{
-		name:   name,
-		desc:   desc,
-		subs:   subcommands,
-		stdout: os.Stdout,
-		stderr: os.Stderr,
-		stdin:  os.Stdin,
+		name:                  name,
+		desc:                  desc,
+		subs:                  subcommands,
+		stdout:                os.Stdout,
+		stderr:                os.Stderr,
+		stdin:                 os.Stdin,
+		hideFlagsFromSynopsis: map[string]any{},
 	}
 	c.run = func() error {
 		return c.printHelp(c.stderr)
@@ -141,13 +142,14 @@ type None = *any
 func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
 	opts, optionSet := makeOptionSet[T]()
 	return &Command{
-		name:      name,
-		desc:      desc,
-		optionSet: optionSet,
-		run:       func() error { return run(opts) },
-		stdout:    os.Stdout,
-		stderr:    os.Stderr,
-		stdin:     os.Stdin,
+		name:                  name,
+		desc:                  desc,
+		optionSet:             optionSet,
+		run:                   func() error { return run(opts) },
+		stdout:                os.Stdout,
+		stderr:                os.Stderr,
+		stdin:                 os.Stdin,
+		hideFlagsFromSynopsis: map[string]any{},
 	}
 }
 
