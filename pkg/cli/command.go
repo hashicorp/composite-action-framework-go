@@ -54,7 +54,6 @@ func (c *Command) Usage() string {
 
 func (c *Command) Synopsis() string {
 	buf := &bytes.Buffer{}
-	fmt.Fprintf(buf, "%s ", c.name)
 	fs := createFlagSet(c)
 	if fs != nil {
 		fs.VisitAll(func(f *flag.Flag) {
@@ -89,7 +88,6 @@ func (c *Command) Synopsis() string {
 			}
 		}
 	}
-	fmt.Fprintln(buf)
 	return buf.String()
 }
 
