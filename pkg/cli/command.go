@@ -15,11 +15,8 @@ import (
 type Command struct {
 	name, desc, help string
 	run              func() error
-	flags            Flags
-	args             Args
-	env              Env
-	init             Init
-	subs             []*Command
+	optionSet
+	subs []*Command
 
 	// Runtime
 	flagSet        *flag.FlagSet
@@ -51,6 +48,20 @@ func (c *Command) Usage() string {
 		return strings.TrimSpace(buf.String())
 	}
 	return fmt.Sprintf("Usage of %s:", c.name)
+}
+
+func (c *Command) Synopsis() string {
+	buf := &bytes.Buffer{}
+	fmt.Fprintf(buf, "%s ", c.name)
+	fs := createFlagSet(c)
+	if fs == nil {
+		fmt.Fprintln(buf)
+		return buf.String()
+	}
+	fs.VisitAll(func(f *flag.Flag) {
+		fmt.Fprintf(buf, "[-%s] ", f.Name)
+	})
+	return buf.String()
 }
 
 func getSubCommand(parent *Command, name string) (*Command, bool) {
@@ -101,24 +112,22 @@ type None = *any
 func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
 	opts, optionSet := makeOptionSet[T]()
 	return &Command{
-		name:   name,
-		desc:   desc,
-		env:    optionSet.env,
-		flags:  optionSet.flags,
-		args:   optionSet.args,
-		init:   optionSet.init,
-		run:    func() error { return run(opts) },
-		stdout: os.Stdout,
-		stderr: os.Stderr,
-		stdin:  os.Stdin,
+		name:      name,
+		desc:      desc,
+		optionSet: optionSet,
+		run:       func() error { return run(opts) },
+		stdout:    os.Stdout,
+		stderr:    os.Stderr,
+		stdin:     os.Stdin,
 	}
 }
 
 type optionSet struct {
-	flags Flags
-	args  Args
-	env   Env
-	init  Init
+	flags      Flags
+	args       Args
+	argDefiner ArgDefiner
+	env        Env
+	init       Init
 }
 
 func makeOptionSet[T any]() (*T, optionSet) {
@@ -127,8 +136,13 @@ func makeOptionSet[T any]() (*T, optionSet) {
 	var os optionSet
 	os.flags, _ = any(opts).(Flags)
 	os.args, _ = any(opts).(Args)
+	os.argDefiner, _ = any(opts).(ArgDefiner)
 	os.env, _ = any(opts).(Env)
 	os.init, _ = any(opts).(Init)
+
+	if os.args != nil && os.argDefiner != nil {
+		panic("opts cannot implement both Args and ArgDefiner")
+	}
 
 	return opts, os
 }

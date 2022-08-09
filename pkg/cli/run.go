@@ -31,12 +31,8 @@ func run(c *Command, args []string) error {
 	if c.Run() == nil {
 		return ErrNotImplemented
 	}
-	if a := c.Args(); a != nil {
-		if err := a.ParseArgs(args); err != nil {
-			return err
-		}
-	} else if len(args) != 0 {
-		return ErrNoArgsAllowed
+	if err := parseArgs(c, args); err != nil {
+		return err
 	}
 	if err := initOpts(c); err != nil {
 		return err
