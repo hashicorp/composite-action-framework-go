@@ -32,7 +32,9 @@ func run(c *Command, args []string) error {
 		return ErrNotImplemented
 	}
 	if a := c.Args(); a != nil {
-		a.ParseArgs(args)
+		if err := a.ParseArgs(args); err != nil {
+			return err
+		}
 	} else if len(args) != 0 {
 		return ErrNoArgsAllowed
 	}
