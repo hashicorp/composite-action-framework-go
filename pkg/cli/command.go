@@ -54,13 +54,35 @@ func (c *Command) Synopsis() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprintf(buf, "%s ", c.name)
 	fs := createFlagSet(c)
-	if fs == nil {
-		fmt.Fprintln(buf)
-		return buf.String()
+	if fs != nil {
+		fs.VisitAll(func(f *flag.Flag) {
+			if f.DefValue == "true" || f.DefValue == "false" {
+				fmt.Fprintf(buf, "[-%s] ", f.Name)
+			} else {
+				fmt.Fprintf(buf, "[-%s=%s] ", f.Name, strings.ToUpper(f.Name))
+			}
+		})
 	}
-	fs.VisitAll(func(f *flag.Flag) {
-		fmt.Fprintf(buf, "[-%s] ", f.Name)
-	})
+	if argList := makeArgList(c); argList != nil {
+		for _, a := range argList {
+			if a.required && !a.variadic {
+				fmt.Fprintf(buf, "<%s>", a.name)
+			} else if !a.required && !a.variadic {
+				fmt.Fprintf(buf, "[%s]", a.name)
+			} else if a.required && a.variadic {
+				fmt.Fprintf(buf, "<")
+				for i := 0; i < a.minVals; i++ {
+					fmt.Fprintf(buf, "%s%d, ", a.name, i)
+				}
+				fmt.Fprintf(buf, "...>")
+			} else if !a.required && a.variadic {
+				fmt.Fprintf(buf, "[%s...]", a.name)
+			} else {
+				panic("logical error with arg handling; please alert the maintainers")
+			}
+		}
+	}
+	fmt.Fprintln(buf)
 	return buf.String()
 }
 
