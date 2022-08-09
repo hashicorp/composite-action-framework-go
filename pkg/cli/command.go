@@ -75,7 +75,7 @@ func (c *Command) Synopsis() string {
 			if a.required && !a.variadic {
 				fmt.Fprintf(buf, "<%s>", a.name)
 			} else if !a.required && !a.variadic {
-				fmt.Fprintf(buf, "[%s(=%s)]", a.name, a.defaultVal)
+				fmt.Fprintf(buf, "[%s (%s)]", a.name, a.defaultVal)
 			} else if a.required && a.variadic {
 				fmt.Fprintf(buf, "<")
 				for i := 0; i < a.minVals; i++ {

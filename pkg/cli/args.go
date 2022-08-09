@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Args interface {
@@ -99,6 +100,7 @@ func (al *ArgList) assertLast() {
 
 func (al *ArgList) add(a Arg) {
 	al.assertLast()
+	a.name = strings.ToUpper(a.name)
 	(*al) = append(*al, a)
 }
 
