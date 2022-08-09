@@ -10,6 +10,10 @@ type Flags interface {
 	Flags(*flag.FlagSet)
 }
 
+type FlagHider interface {
+	HideFlags() []string
+}
+
 func FlagsAll(fs *flag.FlagSet, objs ...Flags) {
 	for _, f := range objs {
 		f.Flags(fs)
@@ -27,6 +31,11 @@ func createFlagSet(c *Command) *flag.FlagSet {
 	if f := c.Flags(); f != nil {
 		fs = flag.NewFlagSet(c.Name(), flag.ContinueOnError)
 		f.Flags(fs)
+	}
+	if fh := c.flagHider; fh != nil {
+		for _, name := range fh.HideFlags() {
+			c.hideFlagsFromSynopsis[name] = nil
+		}
 	}
 	return fs
 }

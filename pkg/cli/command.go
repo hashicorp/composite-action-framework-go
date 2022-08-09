@@ -18,6 +18,8 @@ type Command struct {
 	optionSet
 	subs []*Command
 
+	hideFlagsFromSynopsis map[string]any
+
 	// Runtime
 	flagSet        *flag.FlagSet
 	stdout, stderr io.Writer
@@ -56,6 +58,9 @@ func (c *Command) Synopsis() string {
 	fs := createFlagSet(c)
 	if fs != nil {
 		fs.VisitAll(func(f *flag.Flag) {
+			if _, ok := c.hideFlagsFromSynopsis[f.Name]; ok {
+				return
+			}
 			if f.DefValue == "true" || f.DefValue == "false" {
 				fmt.Fprintf(buf, "[-%s] ", f.Name)
 			} else if f.DefValue == "" {
@@ -148,6 +153,7 @@ func LeafCommand[T any](name, desc string, run func(opts *T) error) *Command {
 
 type optionSet struct {
 	flags      Flags
+	flagHider  FlagHider
 	args       Args
 	argDefiner ArgDefiner
 	env        Env
@@ -159,6 +165,7 @@ func makeOptionSet[T any]() (*T, optionSet) {
 	// It's ok for all/eny of flags, args, env, init to be nil.
 	var os optionSet
 	os.flags, _ = any(opts).(Flags)
+	os.flagHider, _ = any(opts).(FlagHider)
 	os.args, _ = any(opts).(Args)
 	os.argDefiner, _ = any(opts).(ArgDefiner)
 	os.env, _ = any(opts).(Env)
