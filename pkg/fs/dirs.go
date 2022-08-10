@@ -24,9 +24,18 @@ func DirExistsJoin(name ...string) (bool, error) {
 	return DirExists(filepath.Join(name...))
 }
 
-// Mkdir makes the directory at path, using default permissions, and logs its activity.
+// Mkdir makes the directory at path, using default permissions.
 func Mkdir(path string) error {
 	return os.MkdirAll(path, fs.ModePerm)
+}
+
+// MkdirEmpty deletes any existing file or directory at path, and then creates
+// a new empty directory at path, using default permissions.
+func MkdirEmpty(path string) error {
+	if err := os.RemoveAll(path); err != nil {
+		return err
+	}
+	return Mkdir(path)
 }
 
 // Mkdirs calls Mkdir sequentially on paths and returns an error after the first failure.
