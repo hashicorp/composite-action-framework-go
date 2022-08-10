@@ -5,6 +5,15 @@ import (
 	"os"
 )
 
+// Move is like os.Rename except it first ensures there's nothing at dest by
+// deleting anything there.
+func Move(oldPath, newPath string) error {
+	if err := os.RemoveAll(newPath); err != nil {
+		return err
+	}
+	return os.Rename(oldPath, newPath)
+}
+
 func existsAndPassesTest(name string, test func(os.FileInfo) bool) (bool, error) {
 	info, exists, err := stat(name)
 	if err != nil {
