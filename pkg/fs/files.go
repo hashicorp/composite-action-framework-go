@@ -8,15 +8,30 @@ import (
 	"path/filepath"
 )
 
-func Create(name string) (*os.File, error) {
-	exists, err := Exists(name)
+func Create(name string, opts ...Option) (*os.File, error) {
+	fs := New(opts...)
+	return fs.Create(name)
+}
+
+func (fs *FS) Create(name string) (*os.File, error) {
+	if err := fs.prepareContainingDir(name); err != nil {
+		return nil, err
+	}
+	dirExists, err := DirExists(name)
 	if err != nil {
 		return nil, err
 	}
-	if exists {
-		return nil, fmt.Errorf("%s already exists", name)
+	if dirExists {
+		return nil, fmt.Errorf("%s exits and is a directory", name)
 	}
-	return CreateOverwrite(name)
+	fileExists, err := FileExists(name)
+	if err != nil {
+		return nil, err
+	}
+	if fileExists && !fs.overwrite {
+		return nil, fmt.Errorf("%s exists and is a file", name)
+	}
+	return os.Create(name)
 }
 
 func CreateOverwrite(name string) (*os.File, error) {

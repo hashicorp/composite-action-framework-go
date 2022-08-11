@@ -7,7 +7,7 @@ import (
 
 // Move is like os.Rename except it first ensures there's nothing at dest by
 // deleting anything there.
-func Move(oldPath, newPath string) error {
+func Move(oldPath, newPath string, opts ...Option) error {
 	if err := os.RemoveAll(newPath); err != nil {
 		return err
 	}

@@ -23,8 +23,8 @@ func Write(w io.Writer, v any) error {
 	return e.Encode(v)
 }
 
-func WriteFile(filename string, v any) error {
-	f, err := fs.Create(filename)
+func WriteFile(filename string, v any, fsOpts ...fs.Option) error {
+	f, err := fs.Create(filename, fsOpts...)
 	if err != nil {
 		return err
 	}
