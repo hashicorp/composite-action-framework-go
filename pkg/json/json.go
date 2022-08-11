@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+
+	"github.com/hashicorp/composite-action-framework-go/pkg/fs"
 )
 
 func Read[T any](r io.Reader) (T, error) {
@@ -22,7 +24,7 @@ func Write(w io.Writer, v any) error {
 }
 
 func WriteFile(filename string, v any) error {
-	f, err := os.Create(filename)
+	f, err := fs.Create(filename)
 	if err != nil {
 		return err
 	}
