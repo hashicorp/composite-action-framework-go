@@ -14,6 +14,10 @@ func Move(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
 }
 
+func Exists(name string) (bool, error) {
+	return existsAndPassesTest(name, func(os.FileInfo) bool { return true })
+}
+
 func existsAndPassesTest(name string, test func(os.FileInfo) bool) (bool, error) {
 	info, exists, err := stat(name)
 	if err != nil {

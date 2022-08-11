@@ -45,7 +45,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs(),
 			&testOpts{},
-			errors.New("required argument missing: name1"),
+			errors.New("required argument missing: NAME1"),
 		},
 		{
 			"optional_provided",
@@ -128,7 +128,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs(),
 			&testOpts{},
-			errors.New("required name1 argument(s) missing; you must supply at least 1"),
+			errors.New("required NAME1 argument(s) missing; you must supply at least 1"),
 		},
 		{
 			"required_variadic_2_all_missing",
@@ -137,7 +137,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs(),
 			&testOpts{},
-			errors.New("required name1 argument(s) missing; you must supply at least 2"),
+			errors.New("required NAME1 argument(s) missing; you must supply at least 2"),
 		},
 		{
 			"required_variadic_2_one_missing",
@@ -146,7 +146,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs("val1"),
 			&testOpts{},
-			errors.New("required name1 argument(s) missing; you must supply at least 2"),
+			errors.New("required NAME1 argument(s) missing; you must supply at least 2"),
 		},
 		{
 			"optional_variadic_provided",
@@ -184,7 +184,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs("val1"),
 			nil,
-			errors.New("required argument missing: name2"),
+			errors.New("required argument missing: NAME2"),
 		},
 		{
 			"required_provided_optional_provided",
@@ -234,7 +234,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs("val1"),
 			nil,
-			errors.New("required name2 argument(s) missing; you must supply at least 1"),
+			errors.New("required NAME2 argument(s) missing; you must supply at least 1"),
 		},
 		{
 			"required_provided_required_variadic_2_missing_all",
@@ -244,7 +244,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs("val1"),
 			nil,
-			errors.New("required name2 argument(s) missing; you must supply at least 2"),
+			errors.New("required NAME2 argument(s) missing; you must supply at least 2"),
 		},
 		{
 			"required_provided_required_variadic_2_missing_one",
@@ -254,7 +254,7 @@ func TestArgList_parseArgs(t *testing.T) {
 			},
 			mkArgs("val1", "val2"),
 			nil,
-			errors.New("required name2 argument(s) missing; you must supply at least 2"),
+			errors.New("required NAME2 argument(s) missing; you must supply at least 2"),
 		},
 		{
 			"required_provided_optional_variadic_provided",

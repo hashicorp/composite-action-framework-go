@@ -8,6 +8,24 @@ import (
 	"path/filepath"
 )
 
+func Create(name string) (*os.File, error) {
+	exists, err := Exists(name)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, fmt.Errorf("%s already exists", name)
+	}
+	return CreateOverwrite(name)
+}
+
+func CreateOverwrite(name string) (*os.File, error) {
+	if err := Mkdir(filepath.Dir(name)); err != nil {
+		return nil, err
+	}
+	return os.Create(name)
+}
+
 // FileExists returns a boolean indicating that name is a real path
 // and is not a directory.
 func FileExists(name string) (bool, error) {
