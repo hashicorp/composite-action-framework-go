@@ -2,13 +2,28 @@ package fs
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
 // Move is like os.Rename except it first ensures there's nothing at dest by
 // deleting anything there.
 func Move(oldPath, newPath string, opts ...Option) error {
+	return New(opts...).Move(oldPath, newPath)
+}
+
+func (fs *FS) Move(oldPath, newPath string) error {
+	exists, err := Exists(oldPath)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("%s does not exist", oldPath)
+	}
 	if err := os.RemoveAll(newPath); err != nil {
+		return err
+	}
+	if err := fs.prepareContainingDir(newPath); err != nil {
 		return err
 	}
 	return os.Rename(oldPath, newPath)
