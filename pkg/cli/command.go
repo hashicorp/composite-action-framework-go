@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/sethvargo/go-githubactions"
 )
 
 // Command represents a command in the CLI graph.
@@ -31,13 +33,27 @@ func (c *Command) Description() string { return c.desc }
 func (c *Command) Help() string {
 	return strings.TrimSpace(fmt.Sprintf("%s\n\n%s", c.Usage(), strings.TrimSpace(c.help)))
 }
-func (c *Command) Run() func() error           { return c.run }
-func (c *Command) Flags() Flags                { return c.flags }
-func (c *Command) Args() Args                  { return c.args }
-func (c *Command) Env() Env                    { return c.env }
-func (c *Command) Init() Init                  { return c.init }
-func (c *Command) Subcommands() []*Command     { return c.subs }
-func (c *Command) Execute(args []string) error { return runCLI(c, args) }
+func (c *Command) Run() func() error       { return c.run }
+func (c *Command) Flags() Flags            { return c.flags }
+func (c *Command) Args() Args              { return c.args }
+func (c *Command) Env() Env                { return c.env }
+func (c *Command) Init() Init              { return c.init }
+func (c *Command) Subcommands() []*Command { return c.subs }
+
+// Execute should be called on the root command, it is the starting point for evaluating
+// args and routing to the requested command.
+func (c *Command) Execute(args []string) error {
+	// Group all output from each command for easy navigation in GitHub Actions logs.
+	if os.Getenv("GITHUB_ACTIONS") == "true" {
+		// We write commands to stderr not stdout, because the majority of output
+		// is on stderr. GitHub interlaces stderr and stdout in the wrong order sometimes
+		// which makes the groups leaky if the commands are issued on stdout.
+		action := githubactions.New(githubactions.WithWriter(os.Stderr))
+		action.Group(strings.Join(args, " "))
+		defer action.EndGroup()
+	}
+	return runCLI(c, args)
+}
 
 func (c *Command) WithHelp(h string) *Command { c.help = h; return c }
 
