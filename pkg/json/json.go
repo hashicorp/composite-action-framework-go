@@ -17,6 +17,12 @@ func Read[T any](r io.Reader) (T, error) {
 	return *v, err
 }
 
+func String(v any) (string, error) {
+	buf := &bytes.Buffer{}
+	err := Write(buf, v)
+	return buf.String(), err
+}
+
 func Write(w io.Writer, v any) error {
 	e := json.NewEncoder(w)
 	e.SetIndent("", "  ")
