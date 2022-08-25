@@ -13,6 +13,22 @@ func Create(name string, opts ...Option) (*os.File, error) {
 	return fs.Create(name)
 }
 
+func Append(name string, opts ...Option) (*os.File, error) {
+	fs := New(opts...)
+	return fs.Append(name)
+}
+
+func (fs *FS) Append(name string) (*os.File, error) {
+	exists, err := FileExists(name)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return os.OpenFile(name, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	}
+	return fs.Create(name)
+}
+
 func (fs *FS) Create(name string) (*os.File, error) {
 	if err := fs.prepareContainingDir(name); err != nil {
 		return nil, err
