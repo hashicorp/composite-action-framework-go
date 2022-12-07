@@ -19,6 +19,8 @@ type WorktreeState struct {
 	// contents of all changed files.
 	// SHA1 is used for both so that you get a consistent 40 char hex string.
 	SourceHash string
+	// DirtyFiles is a list of all files flagged as dirty in the worktree.
+	DirtyFiles []string
 }
 
 // IsDirty returns true if the source hash isn't exactly the same as the head
@@ -48,6 +50,7 @@ func (c *Client) WorktreeState(opts ...WorktreeStateOption) (WorktreeState, erro
 	if err != nil {
 		return ws, err
 	}
+	ws.DirtyFiles = dirtyFiles
 	commit, err := c.HeadCommit()
 	if err != nil {
 		return ws, err
