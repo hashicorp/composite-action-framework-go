@@ -16,7 +16,8 @@ type Command struct {
 	name, desc, help string
 	run              func() error
 	optionSet
-	subs []*Command
+	subs   []*Command
+	parent *Command
 
 	hideFlagsFromSynopsis map[string]any
 
@@ -37,6 +38,19 @@ func (c *Command) Args() Args              { return c.args }
 func (c *Command) Env() Env                { return c.env }
 func (c *Command) Init() Init              { return c.init }
 func (c *Command) Subcommands() []*Command { return c.subs }
+
+func (c *Command) Path() []string {
+	curr := []string{c.Name()}
+	for c.parent != nil {
+		c = c.parent
+		curr = append([]string{c.Name()}, curr...)
+	}
+	return curr
+}
+
+func (c *Command) PathString() string {
+	return strings.Join(c.Path(), " ")
+}
 
 // Execute should be called on the root command, it is the starting point for evaluating
 // args and routing to the requested command.
@@ -117,6 +131,10 @@ func RootCommand(name, desc string, subcommands ...*Command) *Command {
 	}
 	c.run = func() error {
 		return c.printHelp(c.stderr)
+	}
+	// Track commands' parents so we can generate the command's full path.
+	for _, s := range subcommands {
+		s.parent = c
 	}
 	return c
 }
