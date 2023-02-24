@@ -318,3 +318,33 @@ leaf2 - leaf command 2
 		})
 	}
 }
+
+var noop = func(None) error { return nil }
+
+func TestPath(t *testing.T) {
+	var leaf = LeafCommand("leaf", "blah", noop)
+	RootCommand("root", "blah", leaf)
+
+	got := leaf.Path()
+	if len(got) != 2 {
+		t.Fatalf("got %d path segments; want 2", len(got))
+	}
+	if got[0] != "root" {
+		t.Fatalf("got %q; want %q", got[0], "root")
+	}
+	if got[1] != "leaf" {
+		t.Fatalf("got %q; want %q", got[1], "leaf")
+	}
+}
+
+func TestPathString(t *testing.T) {
+	var leaf = LeafCommand("leaf", "blah", noop)
+	RootCommand("root", "blah", leaf)
+
+	got := leaf.PathString()
+	want := "root leaf"
+	if got != "root leaf" {
+		t.Fatalf("got %q; want %q", got, want)
+	}
+
+}
