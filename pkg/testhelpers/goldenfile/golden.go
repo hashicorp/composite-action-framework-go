@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 // Package goldenfile allows you to assert that a function that generates
 // a file generates the exact file you expect.
 //
