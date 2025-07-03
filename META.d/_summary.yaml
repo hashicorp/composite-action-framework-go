@@ -1,0 +1,14 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+schema: 1.1
+
+partition: release-engineering
+category: github-action
+
+summary:
+  name: composite-action-framework
+  owner: team-selfmanaged-releng
+  description: A library of packages for writing _composite_ GitHub Actions in Go.
+  visibility: external
+  auth_methods: none

@@ -1,0 +1,10 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+runbooks: []
+  # - name: runbook name
+  #   link: link to runbook
+
+other_links:
+  - name: Reproducible Builds RFC
+    link: hhttps://go.hashi.co/rfc/engsrv-084

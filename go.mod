@@ -1,6 +1,6 @@
 module github.com/hashicorp/composite-action-framework-go
 
-go 1.18
+go 1.24
 
 require (
 	github.com/go-git/go-git/v5 v5.5.0
