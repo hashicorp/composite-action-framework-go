@@ -1,0 +1,8 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+tags:
+  family: github-actions
+  type: github-action
+  crt-compatible: true
+  exempt: tool-roam-config
