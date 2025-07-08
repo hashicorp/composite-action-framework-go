@@ -36,3 +36,9 @@ embedded in another similar CLI and become a subcommand there.
 
 This means that functionality written to support an action can be embedded
 inside other tools, to be run locally, for instance.
+
+# Release Process
+
+1. Create a tag on the default branch of the commit to release.  Follow SemVer
+   semantics when choosing versions.
+1. Create a release from the tag, either with the GitHub web UI or the gh CLI.
